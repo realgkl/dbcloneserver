@@ -1,0 +1,331 @@
+<?php
+/**
+ * @desc 采用面向对象的新数据库复制模块
+ * @author gkl
+ * @since 20131231
+ */
+class dbCloneNewModel extends baseModelComm
+{
+	/**
+	 * @desc 复制表数据限制
+	 * @var integer
+	 */
+	protected $copy_limit = 500;
+	/**
+	 * @desc 需要初始化的表数组
+	 */
+	protected $table_list = array(
+		't_user',
+		't_user_amount',
+		't_user_amount_change_log',
+		't_user_amount_freeze',
+		't_lottery_buy',
+		't_pay_log',
+		't_recharge_log',
+		't_point_change_log',
+		't_withdraw_apply',
+		't_voucher',
+		't_voucher_type',
+		't_voucher_batch',
+	);
+	/**
+	 * @desc mysql数据库列表对象
+	 */
+	protected $umtList;
+	/**
+	 * @desc oracle数据库列表对象
+	 */
+	protected $uotList;
+	/**
+	 * @desc mysql model
+	 * @var baseModelMysql
+	 */
+	protected $mm;
+	/**
+	 * @desc oracle model
+	 * @var baseModelOci
+	 */
+	protected $om;
+	/**
+	 * @desc 构造函数
+	 */
+	public function __construct()
+	{
+		parent::__construct();
+		$this->umtList = new useTableList();
+		$this->uotList = new useTableList();
+		$this->mm = new baseModelMysql();
+		$this->om = new baseModelOci();
+	}
+	/**
+	 * @desc 析构函数
+	 */
+	public function __destruct()
+	{
+		unset( $this->umtList );
+		unset( $this->uotList );
+		unset( $this->mm );
+		unset( $this->om );
+	}
+	/**
+	 * @desc 复制mysql表数据到oracle
+	 */
+	protected function __copyDataByTableMyToOra()
+	{
+		if ( !empty( $this->table_list ) )
+		{
+			foreach ( $this->table_list as $table_name )
+			{
+				$m_t = $this->umtList->getByName( $table_name );
+				if ( $m_t === false )
+				{
+					baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t复制表 {$m_t->getName()} 数据失败：名称 {$table_name} 的mysql表不存在", "\n" );
+					continue;
+				}
+				$o_t = $this->uotList->getByName( $table_name );
+				if ( $o_t === false )
+				{
+					baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t复制表 {$m_t->getName()} 数据失败：名称 {$table_name} 的oracle表不存在", "\n" );
+					continue;
+				}
+				baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t开始复制表 {$m_t->getName()} 数据", "\n" );
+				$this->om->begin();
+				$primary_begin = 0;
+				$raw_update_time = $o_t->getLastRawupdatetime();
+				do 
+				{
+					$datas =  &$m_t->getData( $raw_update_time, $this->copy_limit, $primary_begin );
+					if ( $datas->isEmpty() )
+					{
+						$primary_begin = -1;
+					}
+					else
+					{
+						$primary_begin = $datas->getMaxPrimary();
+						if ( is_null( $primary_begin ) )
+						{
+							$primary_begin = -1;
+						}
+						else
+						{
+							$res = $o_t->saveData( $datas );
+							if ( $res === false )
+							{
+								$this->om->rollback();
+								return false;
+							}
+							baseCommon::__echo( '.' );
+						}
+					}
+					$datas->clear();
+					unset( $datas );
+				}
+				while ( $primary_begin >= 0 );
+				baseCommon::__echo( "\n" );
+				$this->om->commit();
+				baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t复制表 {$m_t->getName()} 数据成功", "\n" );
+			}
+		}
+		return true;
+	}
+	/**
+	 * @desc 初始化mysql表
+	 */	
+	protected function __iniMysqlTables()
+	{
+		$this->umtList->clear();
+		if ( !empty( $this->table_list ) )
+		{
+			foreach ( $this->table_list as $table_name )
+			{
+				$table = new useMysqlTable( $this->mm, $table_name );
+				$table->init();
+				$this->umtList->add( $table );
+				unset( $table );
+			}
+		}
+	}
+	/**
+	 * @desc 初始化oracle表
+	 */
+	protected function __iniOracleTables()
+	{
+		$this->uotList->clear();
+		if ( !empty( $this->table_list ) )
+		{
+			foreach ( $this->table_list as $table_name )
+			{
+				$table = useOracleTable::newByTablename( $this->om, $table_name );
+				$table->init();
+				$this->uotList->add( $table, $table->getSrcName() );
+				unset( $table );
+			}
+		}
+	}
+	/**
+	 * @desc 根据{表名}初始化mysql表
+	 * @param string $table_name 表名
+	 * @param baseModelEx $model 数据库链接模块
+	 */
+	protected function &__iniMyTableByName( $table_name, $model = false )
+	{
+		if ( in_array( $table_name, $this->table_list ) )
+		{
+			if ( $model === false )
+			{
+				$model = $this->mm;
+			}
+			$table = new useMysqlTable( $model, $table_name );
+			$table->init();
+			return $table;
+		}
+		return false;
+	}
+	/**
+	 * @desc 根据{表名}初始化oracle表
+	 * @param string $table_name 表名
+	 * @param baseModelEx $model 数据库连接模块
+	 */
+	protected function &__iniOraTableByName( $table_name, $model = false )
+	{
+		if ( in_array( $table_name, $this->table_list ) )
+		{
+			if ( $model === false )
+			{
+				$model = $this->om;
+			}
+			$table = useOracleTable::newByTablename( $model, $table_name );
+			$table->init();
+			return $table;
+		}
+		return false;
+	}
+	/**
+	 * @desc 转换成oracle表
+	 */
+	protected function __toOracleTables()
+	{
+		$keys = $this->umtList->getKeys();
+		if ( !empty( $keys ) )
+		{
+			foreach( $keys as $key )
+			{
+				$src = $this->umtList->getByKey( $key );
+				$table = $src->toOracle( $this->om );
+				$this->uotList->add( $table );
+				unset( $table );
+				unset( $src );
+			}
+		}
+		unset( $keys );
+	}
+	/**
+	 * @desc oracle表初始化创建
+	 */
+	protected function __iniCreateOracleTables()
+	{
+		$keys = $this->uotList->getKeys();
+		if ( !empty( $keys ) )
+		{
+			foreach ( $keys as $key )
+			{
+				$table = $this->uotList->getByKey( $key );
+				$res = $table->create();
+				if ( in_array( $res, array( 1, 2 ) ) )
+				{
+					baseCommon::__echo( "复制表 {$table->getName()} 结构成功", "\n" );
+				}
+				else
+				{
+					baseCommon::__die( "复制表 {$table->getName()} 结构失败", "\n" );
+				}
+			}
+		}
+	}
+	/**
+	 * @desc 克隆t_user_amount表
+	 */
+	protected function __cloneTableTUserAmount()
+	{
+		// 初始化oracle的t_user_amount表
+		$src_t = &$this->__iniOraTableByName( 't_user_amount' );
+		$dst_t = &$this->__iniCloneTUserAmount();
+	}
+	/**
+	 * @desc 复制表
+	 */
+	public function cloneDb()
+	{
+		$this->__iniMysqlTables();
+		$this->__toOracleTables();
+		$this->__iniCreateOracleTables();
+	}
+	/**
+	 * @desc 删除所有表
+	 */
+	public function clear()
+	{
+		if ( !empty( $this->table_list ) )
+		{
+			foreach ( $this->table_list as $table_name )
+			{				
+				$table = useOracleTable::newByTablename( $this->om, $table_name );
+				$table->init();
+				$table->dropTable();
+				unset( $table );
+			}
+		}
+	}
+	/**
+	 * @desc 复制数据
+	 */
+	public function copyData()
+	{
+		$this->__iniMysqlTables();
+		$this->__iniOracleTables();
+		$this->__copyDataByTableMyToOra();
+	}
+	/**
+	 * @desc 克隆t_user_amount表
+	 */
+	public function cloneTableTUserAmount()
+	{
+		$this->__cloneTableTUserAmount();
+	}
+	/**
+	 * @desc 插入mysql t_user测试数据
+	 */
+	/*
+	public function iniMysqlTUser()
+	{
+		$table_name = 't_user';
+		$count = 100;
+		$row = 500;
+		$this->mm->begin();
+		for ( $i = 0; $i < $count; $i++ )
+		{
+			$sql = "insert into `{$table_name}` (`name`, `nick_name`, `password`,`pay_password`,`last_login_time`,`last_login_ip`,`raw_add_time`) values ";
+			$sql_p = array();
+			for ( $j = 0; $j < $row; $j++ )
+			{
+				$micro_time = microtime();
+				$micro_time_arr = explode( ' ', $micro_time );
+				$micro_time_number = round( floatval( date('ymdHis') ) + floatval( $micro_time_arr[0] ) , 6 );
+				$micro_time_number = str_replace( '.', '', $micro_time_number );
+				$name = $micro_time_number . substr( '000' . $j, -4, 4 );
+				$sql_p[] = "('{$name}', '{$name}','','','0000-00-00 00:00:00','',now())";
+				usleep( 1 );
+			}
+			$sql .= implode( ',', $sql_p );
+			$res = $this->mm->exec( $sql );
+			if ( $res === false )
+			{
+				$this->mm->rollback();
+				return;
+			}
+			baseCommon::__echo( '.' );
+		}
+		$this->mm->commit();
+	}
+	*/
+}

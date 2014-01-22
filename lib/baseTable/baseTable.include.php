@@ -1,0 +1,21 @@
+<?php
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseList' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseSearchCond' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseRecord' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseRecordMysql' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseRecordOracle' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseCollection' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableElement' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseFieldType' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableField' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableFieldList' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableFieldMysql' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableFieldOracle' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTablePrimary' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableIndex' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableIndexList' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTable' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableMysql' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableOracle' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseTableList' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseDbExchange' . '.class.php';
