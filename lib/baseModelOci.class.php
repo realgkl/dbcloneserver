@@ -527,4 +527,11 @@ class baseModelOci extends baseModelEx
 	{
 		return $this->__drop_table( $table_name );
 	}
+	/**
+	 * @desc 创建自增序列
+	 */
+	public function create_seq( $seq_name, $start = 1, $stepby = 1 )
+	{
+		return $this->__create_seq( $seq_name, $start, $stepby );
+	}
 }
