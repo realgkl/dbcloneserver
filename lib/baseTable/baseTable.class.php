@@ -32,9 +32,13 @@ class baseTable extends baseTableElement
 	 */
 	protected $collection;
 	/**
-	 * @desc 搜索条件
+	 * @desc 搜索条件对象
 	 */
 	protected $search_cond;
+	/**
+	 * @desc 获取字段
+	 */
+	protected $select;
 	/**
 	 * @desc 构造函数
 	 * @param baseModelEx $conn_obj
@@ -49,12 +53,14 @@ class baseTable extends baseTableElement
 		$this->src_name = $src_name;
 		$this->collection = new baseCollection();
 		$this->search_cond = new baseSearchCond();
+		$this->select = array();
 	}
 	/**
 	 * @desc 析构函数
 	 */
 	public function __destruct()
 	{
+		unset( $this->select );
 		unset( $this->search_cond );
 		unset( $this->collection );
 		unset( $this->fields );
@@ -147,6 +153,7 @@ class baseTable extends baseTableElement
 	 */
 	protected function &__getData( $raw_update_time, $limit = 0, $primary_begin = 0 )
 	{
+		$this->collection->clear();
 		return $this->collection;
 	}
 	/**
@@ -171,6 +178,16 @@ class baseTable extends baseTableElement
 	protected function __existsData( &$data )
 	{
 		return false;
+	}
+	/**
+	 * @desc 根据{条件}获取数据
+	 * @param integer $limit 限制条数
+	 * @param unknown $primary_begin 主键开始值
+	 */
+	protected function __getDataByCond( $limit, $primary_begin = false )
+	{
+		$this->collection->clear();
+		return $this->collection;
 	}
 	/**
 	 * @desc 初始化
@@ -320,17 +337,34 @@ class baseTable extends baseTableElement
 		return $this->search_cond->add( $field, $opera, $value_1, $value_2 );
 	}
 	/**
+	 * @desc 增加{查询字段}
+	 */
+	public function select( $field )
+	{
+		$field_arr = $this->fields->getFieldsArr();
+		if ( in_array( $field, $field_arr ) )
+		{
+			$key = count( $this->select );
+			$this->select[$key] = $field;
+			return $key;
+		}
+		return false;
+	}
+	/**
+	 * @desc 清楚搜索条件
+	 */
+	public function searchClear()
+	{
+		$this->select = array();
+		$this->search_cond->clear();
+	}
+	/**
 	 * @desc 根据{条件}获取数据
 	 * @param integer $limit 限制条数
 	 * @param unknown $primary_begin 主键开始值
 	 */
 	public function getDataByCond( $limit, $primary_begin = false )
 	{
-		$where = '';
-		if ( $this->search_cond->isEmpty() )
-		{
-			$this->search_cond->add( $this->primary->get()->getName(), '>', $primary_begin );			
-		}
-		$where = $this->search_cond->createSql();
+		return $this->__getDataByCond( $limit, $primary_begin = false );
 	}
 }

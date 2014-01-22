@@ -429,6 +429,31 @@ class baseTableOracle extends baseTable
 		return $this->conn_obj->recordExists( $table_name, $primary_field_name, $value );
 	}
 	/**
+	 * @see baseTable::__getDataByCond()
+	 */
+	protected function __getDataByCond( $limit, $primary_begin = false )
+	{
+		if ( $primary_begin !== false )
+		{
+			$this->search_cond->add( $this->primary->get()->getName(), '>', $primary_begin );
+		}
+		$where = $this->search_cond->createSql();
+		$where = $where === false ? '' : "WHERE {$where} ";
+		if ( !empty( $this->select ) )
+		{
+			$select = "SELECT " . implode( ', ', $this->select ) . " ";
+		}
+		else
+		{
+			$fields_arr = $this->fields->getFieldsArr();
+			$select = "SELECT " . implode( ', ', $fields_arr ) . " ";
+			unset( $fields_arr );
+		}
+		$from = "FROM {$this->name} ";
+		$this->collection->clear();
+		return $this->collection;
+	}
+	/**
 	 * @desc 创建mysql表名的表对象
 	 * @param string $table_name mysql表名
 	 * @return baseTableOracle

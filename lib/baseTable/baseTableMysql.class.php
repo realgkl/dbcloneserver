@@ -188,6 +188,7 @@ class baseTableMysql extends baseTable
 		$sql .= implode( ',', $select_arr );
 		$sql .= " from `{$this->getName()}` where {$where} order by `{$field_primary}` limit {$limit}";
 		$res = $this->conn_obj->getAll( $sql, $params );
+		$this->collection->clear();
 		foreach ( $res as $data )
 		{
 			$rec = new baseRecord();

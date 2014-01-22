@@ -219,7 +219,7 @@ class baseSearchCondLst extends baseList
 	 * @desc 根据{唯一标识}获取条件
 	 * @var baseSearchCondRecord
 	 */
-	public function &getByName( $name )
+	public function &getByName( $name )asdasdasd
 	{
 		return $this->__getByName( $name );
 	}
