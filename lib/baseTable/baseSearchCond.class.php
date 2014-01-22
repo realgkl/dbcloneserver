@@ -86,9 +86,25 @@ class baseSearchCond
 			foreach ( $keys as $key )
 			{
 				$cond_rec = &$this->cond_lst->getByKey( $key );
-				$sql_arr[] = "{$cond_rec->}"
+				if ( $cond_rec->getOpera() == 'between' )
+				{
+					$sql_arr[] = "{$cond_rec->getField()} between {$cond_rec->getValue1()} and {$cond_rec->getValue2()}";
+				}
+				else
+				{
+					$sql_arr[] = "{$cond_rec->getField()} {$cond_rec->getOpera()} {$cond_rec->getValue1()}";
+				}
 			}
+			return implode( ' AND ', $sql_arr );
 		}
+		return false;
+	}
+	/**
+	 * @desc 清除搜索条件
+	 */
+	public function clear()
+	{
+		$this->cond_lst->clear();
 	}
 }
 /**
@@ -140,6 +156,34 @@ class baseSearchCondRecord
 	public function getKey()
 	{
 		return $this->field.$this->opera.$this->value_1.$this->value_2;
+	}
+	/**
+	 * @desc 获取字段名
+	 */
+	public function getField()
+	{
+		return $this->field;
+	}
+	/**
+	 * @desc 获取操作符
+	 */
+	public function getOpera()
+	{
+		return $this->opera;
+	}
+	/**
+	 * @desc 获取值1
+	 */
+	public function getValue1()
+	{
+		return $this->value_1;
+	}
+	/**
+	 * @desc 获取值2
+	 */
+	public function getValue2()
+	{
+		return $this->value_2;
 	}
 }
 /**
