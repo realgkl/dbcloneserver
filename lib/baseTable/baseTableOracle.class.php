@@ -43,7 +43,7 @@ class baseTableOracle extends baseTable
 				$sql_field .= ' ';
 				if ( !is_null( $field->getDefault() ) && $field->getType() !== 'date' )
 				{
-					if ( $field_getType === 'number' )
+					if ( $field->getType() === 'number' )
 					{
 						$sql_field .= "default {$field->getDefault()} ";
 					}
@@ -164,7 +164,15 @@ class baseTableOracle extends baseTable
 						$field_prec = is_null( $field_prec ) ? false : $field_prec;
 					}
 					$field_not_null = $this->conn_obj->getValue( $v, 'nullable' ) == 'N' ? true : false;
-					$field_default = $this->conn_obj->getValue( $v, 'data_default' );
+					$field_default = trim( $this->conn_obj->getValue( $v, 'data_default' ) );
+					$field_default = $field_default == "''" ? '' : $field_default;
+					if ( in_array( $field_type, array(
+							baseFieldType::FT_ORA_DATE,
+							baseFieldType::FT_ORA_NUMBER,
+						) ) and $field_default == '' )
+					{
+						$field_default = null;
+					}
 					$field_is_primary = false;
 					$field_obj = new baseTableFieldOracle( $this,  $field_name );
 					$res = $field_obj->setTypeLenPrec( $field_type, $field_len, $field_prec, $field_not_null, $field_default, $field_is_primary );
@@ -173,7 +181,6 @@ class baseTableOracle extends baseTable
 						return false;
 					}
 					$this->fields->add( $field_obj );
-					$field_obj = null;
 					unset( $field_obj );
 				}
 			}
@@ -298,9 +305,11 @@ class baseTableOracle extends baseTable
 		$keys = $ora_datas->getKeys();
 		$ins_arr = array();
 		$up_arr = array();
+		$up_params = array();
+		$up_occ = '?';
 		$ins_sql = "INSERT INTO {$this->getName()} ";
 		$fields_arr = $this->fields->getFieldsArr();
-		$ins_sql .= "(" . strtoupper( implode( ',', $fields_arr ) ) . ") ";
+		$ins_sql .= "(" . strtoupper( implode( ',', $fields_arr ) ) . ") ";		
 		foreach ( $keys as $key )
 		{
 			$rec = &$ora_datas->getByKey( $key );
@@ -311,7 +320,11 @@ class baseTableOracle extends baseTable
 			}
 			else
 			{
-				$up_arr[] = "UPDATE {$this->name} " . $rec->createUpSql( $fields );
+				$params = array();
+				$key = count( $up_arr );				
+				$up_arr[$key] =$rec->createUpSql( $this->name, $params, $fields, $up_occ );
+				$up_params[$key] = $params;
+				unset( $params );
 			}
 		}
 		if ( !empty( $ins_arr ) )
@@ -325,9 +338,12 @@ class baseTableOracle extends baseTable
 		}
 		if ( !empty( $up_arr ) )
 		{
-			foreach ( $up_arr as $up_sql )
+			foreach ( $up_arr as $key => $up_sql )
 			{
-				$res = $this->conn_obj->exec( $up_sql );
+				$params = $up_params[$key];
+				$dst_occ = baseModelOci::OCC;
+				$up_sql = $this->__replaceOcc( $up_sql, $up_occ, $dst_occ );				
+				$res = $this->conn_obj->exec( $up_sql, $params );
 				if ( $res <= 0 )
 				{
 					return false;
@@ -394,6 +410,8 @@ class baseTableOracle extends baseTable
 				else
 				{
 					$sql = "alter table {$this->name} add {$dst_field->getName()} {$dst_field->getTypeLenStr()} {$dst_field->getDefaultStr()}";
+					echo $sql;
+					die;
 					$res = $this->conn_obj->exec( $sql );
 					if ( $res === false )
 					{
@@ -431,14 +449,28 @@ class baseTableOracle extends baseTable
 	/**
 	 * @see baseTable::__getDataByCond()
 	 */
-	protected function __getDataByCond( $limit, $primary_begin = false )
+	protected function &__getDataByCond( $limit = 0, $primary_begin = false, $primary_field = '' )
 	{
+		if ( $primary_field == '' )
+		{
+			$primary_name = $this->primary->get()->getName();
+		}
+		else
+		{
+			$primary_name = $primary_field;
+		}
 		if ( $primary_begin !== false )
 		{
-			$this->search_cond->add( $this->primary->get()->getName(), '>', $primary_begin );
+			$this->search_cond->add( $primary_name, '>', $primary_begin );
 		}
-		$where = $this->search_cond->createSql();
+		$params = array();
+		$occ = '?';
+		$where = $this->search_cond->createSql( $params, $occ );
 		$where = $where === false ? '' : "WHERE {$where} ";
+		if ( $limit > 0 )
+		{
+			$this->select[] = "ROWNUM as RN";
+		}
 		if ( !empty( $this->select ) )
 		{
 			$select = "SELECT " . implode( ', ', $this->select ) . " ";
@@ -450,8 +482,72 @@ class baseTableOracle extends baseTable
 			unset( $fields_arr );
 		}
 		$from = "FROM {$this->name} ";
+		if ( !empty( $this->order_by ) )
+		{
+			$order_by = 'ORDER BY ' . implode( ',', $this->order_by ) . ' ';
+		}
+		else
+		{
+			$order_by = '';
+		}
+		if ( !empty( $this->group_by ) )
+		{
+			$group_by = 'GROUP BY ' . implode( ', ', $this->group_by ) . ' ';
+		}
+		else
+		{
+			$group_by = '';
+		}
+		if ( $limit > 0 )
+		{
+			$sql = "SELECT a.* FROM ({$select}{$from}{$where}{$group_by}{$order_by}) a WHERE a.RN <= {$occ}";
+			$params[] = $limit;
+		}
+		else
+		{
+			$sql = "{$select}{$from}{$where}{$group_by}{$order_by}";
+		}
+		$ora_occ = baseModelOci::OCC;
+		$sql = $this->__replaceOcc($sql, $occ, $ora_occ );
+		$res = $this->conn_obj->getAll( $sql, $params, false );
 		$this->collection->clear();
+		if ( !empty( $res ) )
+		{
+			foreach ( $res as $data )
+			{
+				$rec = new baseRecord();
+				$rec->setData( $data );
+				$rec->setPrimary( $primary_name );
+				$this->collection->add( $rec );
+				unset( $rec );
+			}
+		}
 		return $this->collection;
+	}
+	/**
+	 * @see baseTable::__replaceOcc()
+	 */
+	protected function __replaceOcc( $sql,  $src_occ, $dst_occ, $autoincrease = true )
+	{
+		$index = 0;
+		do
+		{
+			$next = false;
+			$found = preg_match( '/\\' . $src_occ . '/', $sql );
+			if ( $found > 0 )
+			{
+				$replace = $dst_occ;
+				if ( $autoincrease === true )
+				{
+					$replace .= $index;
+				}
+				$sql = preg_replace( '/\\' . $src_occ . '/', $replace, $sql, 1 );
+				$next = true;
+				$index++;
+			}
+		}
+		while ( $next );
+		return $sql;
 	}
 	/**
 	 * @desc 创建mysql表名的表对象

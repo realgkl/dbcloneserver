@@ -31,6 +31,14 @@ class baseSearchCond
 		'not in',
 	);
 	/**
+	 * @desc 聚合函数
+	 */
+	public static $func = array(
+		'sum',
+		'count',
+	);
+	
+	/**
 	 * @desc 构造函数
 	 */
 	public function __construct()
@@ -52,11 +60,11 @@ class baseSearchCond
 	{
 		if ( $field != '' && in_array( $opera, $this->opera_arr ) && $value_1 != '' )
 		{
-			if ( $cond_arr['opera'] == 'between' && $value_2 == '' )
+			if ( $opera == 'between' && $value_2 == '' )
 			{
 				return false;
 			}
-			$cond_record = new baseSearchCondRecord( $field, $opear, $value_1, $value_2 );
+			$cond_record = new baseSearchCondRecord( $field, $opera, $value_1, $value_2 );
 			$key = $this->cond_lst->add( $cond_record );
 			if ( $key === false )
 			{
@@ -77,8 +85,9 @@ class baseSearchCond
 	/**
 	 * @desc 生成sql
 	 */
-	public function createSql()
+	public function createSql( &$params, $occ= '?' )
 	{
+		$params = array();
 		$sql_arr = array();
 		if ( !$this->cond_lst->isEmpty() )
 		{
@@ -88,11 +97,14 @@ class baseSearchCond
 				$cond_rec = &$this->cond_lst->getByKey( $key );
 				if ( $cond_rec->getOpera() == 'between' )
 				{
-					$sql_arr[] = "{$cond_rec->getField()} between {$cond_rec->getValue1()} and {$cond_rec->getValue2()}";
+					$sql_arr[] = "{$cond_rec->getField()} between {$occ} and {$occ}";
+					$params[] = $cond_rec->getValue1();
+					$params[] = $cond_rec->getValue2();
 				}
 				else
 				{
-					$sql_arr[] = "{$cond_rec->getField()} {$cond_rec->getOpera()} {$cond_rec->getValue1()}";
+					$sql_arr[] = "{$cond_rec->getField()} {$cond_rec->getOpera()} {$occ}";
+					$params[] = $cond_rec->getValue1();
 				}
 			}
 			return implode( ' AND ', $sql_arr );
@@ -105,6 +117,13 @@ class baseSearchCond
 	public function clear()
 	{
 		$this->cond_lst->clear();
+	}
+	/**
+	 * @desc 获取占位符
+	 */
+	public function getOcc()
+	{
+		return $this->occ;
 	}
 }
 /**
@@ -135,10 +154,10 @@ class baseSearchCondRecord
 	/**
 	 * @desc 构造函数
 	 */
-	public function __construct( $field, $opear, $value_1, $value_2 )
+	public function __construct( $field, $opera, $value_1, $value_2 )
 	{
 		$this->field = $field;
-		$this->opera = $opear;
+		$this->opera = $opera;
 		$this->value_1 = $value_1;
 		$value_2 = is_null( $value_2 ) ? '' : $value_2;
 		$this->value_2 = $value_2;
@@ -219,7 +238,7 @@ class baseSearchCondLst extends baseList
 	 * @desc 根据{唯一标识}获取条件
 	 * @var baseSearchCondRecord
 	 */
-	public function &getByName( $name )asdasdasd
+	public function &getByName( $name )
 	{
 		return $this->__getByName( $name );
 	}

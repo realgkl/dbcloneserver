@@ -266,11 +266,14 @@ class baseModelOci extends baseModelEx
 	/**
 	 * @see baseModelEx::getAll()
 	 */
-	public function getAll ( $sql, $params = array() )
+	public function getAll ( $sql, $params = array(), $need_filter = true, $err_die = true, &$err_no ='', &$err_msg = '' )
 	{
 		if ( $this->show_time )
 			$t = $this->diff();
-		$params = $this->__filter_params( $params );
+		if ( $need_filter === true )
+		{
+			$params = $this->__filter_params( $params );
+		}
 		$query = $this->db->prepare( $sql );
 		$this->__useOccBindParams( $params, $query );
 		$res = $query->execute();
@@ -282,18 +285,22 @@ class baseModelOci extends baseModelEx
 		}
 		else
 		{
-			$this->__error();
+			$sql = $this->__createSqlByParams( $sql, $params );
+			$this->__error( $sql, $err_die, $err_no, $err_msg );
 		}
 		return false;
 	}
 	/**
 	 * @see baseModelEx::getRow()
 	 */
-	public function getRow( $sql, $params = array() )
+	public function getRow( $sql, $params = array(), $need_filter = true, $err_die = true, &$err_no ='', &$err_msg = '' )
 	{
 		if ( $this->show_time )
 			$t = $this->diff();
-		$params = $this->__filter_params( $params );
+		if ( $need_filter === true )
+		{
+			$params = $this->__filter_params( $params );
+		}
 		$query = $this->db->prepare( $sql );
 		$this->__useOccBindParams( $params, $query );
 		$res = $query->execute();
@@ -305,7 +312,8 @@ class baseModelOci extends baseModelEx
 		}
 		else
 		{
-			$this->__error();
+			$sql = $this->__createSqlByParams( $sql, $params );
+			$this->__error( $sql, $err_die, $err_no, $err_msg );
 		}
 		return false;
 	}
@@ -328,7 +336,15 @@ class baseModelOci extends baseModelEx
 		{
 			if ( $this->show_time )
 				$this->diff( $t, $sql );
-			return $query->rowCount();
+			$affact = $query->rowCount();
+			/*
+			if ( $affact <= 0 )
+			{ 
+				$sql = $this->__createSqlByParams( $sql, $params );
+				echo $sql;
+			}
+			*/
+			return $affact;
 		}
 		else
 		{

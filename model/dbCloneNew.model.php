@@ -27,6 +27,7 @@ class dbCloneNewModel extends baseModelComm
 		't_voucher',
 		't_voucher_type',
 		't_voucher_batch',
+		't_report_record',
 	);
 	/**
 	 * @desc mysql数据库列表对象
@@ -186,13 +187,13 @@ class dbCloneNewModel extends baseModelComm
 	 * @param string $table_name 表名
 	 * @param baseModelEx $model 数据库连接模块
 	 */
-	protected function &__iniOraTableByName( $table_name, $model = false )
+	protected function &__iniOraTableByName( $table_name, &$model = false )
 	{
 		if ( in_array( $table_name, $this->table_list ) )
 		{
 			if ( $model === false )
 			{
-				$model = $this->om;
+				$model = &$this->om;
 			}
 			$table = useOracleTable::newByTablename( $model, $table_name );
 			$table->init();
@@ -243,13 +244,113 @@ class dbCloneNewModel extends baseModelComm
 		}
 	}
 	/**
+	 * @desc 初始化t_user_amount镜像表
+	 * @return cloneTUserAmountTable
+	 */
+	protected function &__iniCloneTUserAmount( &$model = false )
+	{
+		if ( $model === false )
+		{
+			$model = &$this->om;
+		}
+		$table = new cloneTUserAmountTable( $model );
+		$table->init();
+		return $table;
+	}
+	/**
 	 * @desc 克隆t_user_amount表
 	 */
 	protected function __cloneTableTUserAmount()
 	{
 		// 初始化oracle的t_user_amount表
-		$src_t = &$this->__iniOraTableByName( 't_user_amount' );
-		$dst_t = &$this->__iniCloneTUserAmount();
+		$src_t = &$this->__iniOraTableByName( 't_user_amount', $this->om );
+		// 初始化t_user_amount镜像表
+		$dst_t = &$this->__iniCloneTUserAmount( $this->om );
+		$limit = $this->copy_limit;
+		$this->om->begin();
+		$primary_begin = 0;
+		baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t开始克隆表 {$src_t->getName()} 数据", "\n" );
+		do
+		{
+			// 根据user_id升序获取用户的彩金和冻结
+			$src_t->clearSearchCond();
+			$src_t->select( 'f_amount' );
+			$src_t->select( 'f_freeze_amount' );
+			$src_t->orderBy( 'f_user_id' );
+			$datas = &$src_t->getDataByCond( $limit, $primary_begin, 'f_user_id' );
+			if ( $datas->isEmpty() )
+			{
+				$primary_begin = -1;
+			}
+			else
+			{
+				$primary_begin = $datas->getMaxPrimary();
+				if ( is_null( $primary_begin ) )
+				{
+					$primary_begin = -1;
+				}
+				else
+				{
+					$keys = $datas->getKeys();
+					foreach ( $keys as $key )
+					{
+						// 获取单个用户的id、彩金和冻结准备和镜像库做比较
+						$data = &$datas->getByKey( $key );
+						$user_id = $data->getByField( 'f_user_id' );
+						$amount = $data->getByField( 'f_amount' );
+						$freeze = $data->getByField( 'f_freeze_amount' );
+						unset( $data );
+						// 不存在用户id的时候为异常不做处理
+						if ( !is_null( $user_id ) )
+						{
+							// 获取当前的clone数据值
+							$date = date( 'Y-m-d' );
+							$clone_datas = &$dst_t->getByDate( $user_id, $date );							
+							if ( !$clone_datas->isEmpty() )
+							// 存在则比较差值，并存入
+							{
+								$clone_data = &$clone_datas->getByKey( 0 );
+								$clone_amount = $clone_data->getByField( 'f_amount' );
+								$clone_freeze = $clone_data->getByField( 'f_freeze_amount' );
+								unset( $clone_data );
+								// 当有差值时再镜像
+								$amount_diff = round( $amount - $clone_amount, 2 );
+								$freeze_diff = round( $freeze - $clone_freeze, 2 );
+								$diff = ( $amount_diff != 0 ) || ( $freeze_diff != 0 ) ? true : false;
+								if ( $diff === true )
+								{
+									$res = $dst_t->saveAmountFreezeByUseridDate( $amount_diff, $freeze_diff, $user_id, $date  );
+									if ( $res === false )
+									{
+										$this->om->rollback();
+										return false;
+									}
+								}
+							}
+							else
+							// 不存在则直接存入
+							{
+								$res = $dst_t->saveAmountFreezeByUseridDate( $amount, $freeze, $user_id, $date  );
+								if ( $res === false )
+								{
+									$this->om->rollback();
+									return false;
+								}
+							}
+							unset( $clone_datas );
+							baseCommon::__echo( '.' );
+						}
+					}
+				}
+			}
+			unset( $datas );
+		}		
+		while ( $primary_begin >= 0 );
+		unset( $src_t );
+		unset( $dst_t );
+		baseCommon::__echo( "\n" );
+		$this->om->commit();
+		return true;
 	}
 	/**
 	 * @desc 复制表
@@ -290,7 +391,15 @@ class dbCloneNewModel extends baseModelComm
 	 */
 	public function cloneTableTUserAmount()
 	{
-		$this->__cloneTableTUserAmount();
+		$res = $this->__cloneTableTUserAmount();
+		if ( $res === true )
+		{
+			baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t克隆表 t_user_amount 成功", "\n" );
+		}
+		else
+		{
+			baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t克隆表 t_user_amount 失败", "\n" );
+		}
 	}
 	/**
 	 * @desc 插入mysql t_user测试数据

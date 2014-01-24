@@ -65,7 +65,8 @@ abstract class baseTableField extends baseTableChildElement
 	 */
 	public function getFieldProp()
 	{
-		return $this->name . '|' . $this->type . '|' . $this->len . '|' . $this->precision . '|' . $this->default . '|' . $this->not_null . '|' . $this->is_primary;
+		$default = is_null( $this->default ) ? '' : $this->default;
+		return $this->name . '|' . $this->type . '|' . $this->len . '|' . $this->precision . '|' . $default . '|' . $this->not_null . '|' . $this->is_primary;
 	}
 	/**
 	 * @desc 打印出字段属性

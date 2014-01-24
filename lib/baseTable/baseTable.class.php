@@ -40,6 +40,14 @@ class baseTable extends baseTableElement
 	 */
 	protected $select;
 	/**
+	 * @desc 分组字段
+	 */
+	protected $group_by;
+	/**
+	 * @desc 排序字段
+	 */
+	protected $order_by;
+	/**
 	 * @desc 构造函数
 	 * @param baseModelEx $conn_obj
 	 * @param string $name 表名
@@ -54,12 +62,14 @@ class baseTable extends baseTableElement
 		$this->collection = new baseCollection();
 		$this->search_cond = new baseSearchCond();
 		$this->select = array();
+		$this->group_by = array();
 	}
 	/**
 	 * @desc 析构函数
 	 */
 	public function __destruct()
 	{
+		unset( $this->group_by );
 		unset( $this->select );
 		unset( $this->search_cond );
 		unset( $this->collection );
@@ -183,8 +193,9 @@ class baseTable extends baseTableElement
 	 * @desc 根据{条件}获取数据
 	 * @param integer $limit 限制条数
 	 * @param unknown $primary_begin 主键开始值
+	 * @param string $primary_field 主键字段
 	 */
-	protected function __getDataByCond( $limit, $primary_begin = false )
+	protected function &__getDataByCond( $limit = 0, $primary_begin = false, $primary_field = '' )
 	{
 		$this->collection->clear();
 		return $this->collection;
@@ -202,6 +213,17 @@ class baseTable extends baseTableElement
 		{
 			baseCommon::__die( "表 {$this->name} 初始化出错。" );
 		}
+	}
+	/**
+	 * @desc 占位符替换
+	 * @param string $sql 需要替换的sql
+	 * @param string $src_occ 源占位符
+	 * @param string $dst_occ 目标占位符
+	 * @param bool $autoincrease 是否自增
+	 */
+	protected function __replaceOcc( $sql, $src_occ, $dst_occ, $autoincrease = true )
+	{
+		return '';
 	}
 	/**
 	 * @desc 创建
@@ -332,20 +354,63 @@ class baseTable extends baseTableElement
 	/**
 	 * @desc 增加{搜索条件}
 	 */
-	public function where( $field, $opear, $value_1, $value_2 = null )
+	public function where( $field, $opera, $value_1, $value_2 = null )
 	{
 		return $this->search_cond->add( $field, $opera, $value_1, $value_2 );
 	}
 	/**
 	 * @desc 增加{查询字段}
 	 */
-	public function select( $field )
+	public function select( $field, $func = '', $alias = '' )
 	{
 		$field_arr = $this->fields->getFieldsArr();
 		if ( in_array( $field, $field_arr ) )
 		{
 			$key = count( $this->select );
-			$this->select[$key] = $field;
+			if ( in_array( $func, baseSearchCond::$func ) )
+			{
+				$this->select[$key] = "{$func}({$field})";
+			}
+			else 
+			{
+				$this->select[$key] = $field;
+			}
+			if ( $alias != '' )
+			{
+				$this->select[$key] = $this->select[$key] . ' as ' . $alias; 
+			}
+			return $key;
+		}
+		else if ( $field === '*' )
+		{
+			return true;
+		}
+		return false;
+	}
+	/**
+	 * @desc 添加分组字段
+	 */
+	public function groupBy( $field )
+	{
+		$field_arr = $this->fields->getFieldsArr();
+		if ( in_array( $field, $field_arr ) )
+		{
+			$key = count( $this->group_by );
+			$this->group_by[$key] = $field;
+			return $key;
+		}
+		return false;
+	}
+	/**
+	 * @desc 添加排序字段
+	 */
+	public function orderBy( $field, $asc = 'asc' )
+	{
+		$field_arr = $this->fields->getFieldsArr();
+		if ( in_array( $field, $field_arr ) && in_array( $asc, array( 'asc', 'desc' ) ) )
+		{
+			$key = count( $this->order_by );
+			$this->order_by[$key] = "{$field} {$asc}";
 			return $key;
 		}
 		return false;
@@ -353,18 +418,45 @@ class baseTable extends baseTableElement
 	/**
 	 * @desc 清楚搜索条件
 	 */
-	public function searchClear()
+	public function clearSearchCond()
 	{
 		$this->select = array();
+		$this->group_by = array();
+		$this->order_by = array();
 		$this->search_cond->clear();
+	}
+	/**
+	 * @desc 清空数据集
+	 */
+	public function clearCollection()
+	{
+		$this->collection->clear();
 	}
 	/**
 	 * @desc 根据{条件}获取数据
 	 * @param integer $limit 限制条数
 	 * @param unknown $primary_begin 主键开始值
+	 * @return baseCollection 数据集
 	 */
-	public function getDataByCond( $limit, $primary_begin = false )
+	public function &getDataByCond( $limit = 0, $primary_begin = false, $primary_field = '' )
 	{
-		return $this->__getDataByCond( $limit, $primary_begin = false );
+		return $this->__getDataByCond( $limit, $primary_begin = false, $primary_field = '' );
+	}
+	/**
+	 * @desc 判断表是否存在
+	 */
+	public function existsTable()
+	{
+		return $this->__existsTable();
+	}
+	/**
+	 * @desc 占位符替换
+	 * @param string $src_occ 源占位符
+	 * @param string $dst_occ 目标占位符
+	 * @param bool $autoincrease 是否自增
+	 */
+	public function replaceOcc( $sql, $src_occ, $dst_occ, $autoincrease = true )
+	{
+		return $this->__replaceOcc( $sql, $src_occ, $dst_occ, $autoincrease );
 	}
 }

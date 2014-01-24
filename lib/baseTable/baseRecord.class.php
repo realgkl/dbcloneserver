@@ -99,7 +99,7 @@ class baseRecord
 		}
 	}
 	/**
-	 * @desc 生成sql
+	 * @desc 生成多条插入sql
 	 * @param baseTableFieldList $fields
 	 */
 	public function createSql( &$fields = null )
@@ -108,17 +108,23 @@ class baseRecord
 	}
 	/**
 	 * @desc 生成update sql
-	 * @param baseTableFieldList $fields
+	 * @param string $table_name 表名
+	 * @param array $params 参数
+	 * @param baseTableFieldList $fields 字段列表
+	 * @param string $occ 占位符
 	 */
-	public function createUpSql( &$fields = null )
+	public function createUpSql( $table_name, &$params = array(), &$fields = null, $occ = '?' )
 	{
 		return '';
 	}
 	/**
 	 * @desc 生成insert sql
-	 * @param baseTableFieldList $fields
+	 * @param string $table_name 表名
+	 * @param array $params 参数
+	 * @param baseTableFieldList $fields 字段列表
+	 * @param string $occ 占位符
 	 */
-	public function createInsSql( &$fields = null )
+	public function createInsSql( $table_name, &$params = array(), &$fields = null, $occ = '?' )
 	{
 		return '';
 	}

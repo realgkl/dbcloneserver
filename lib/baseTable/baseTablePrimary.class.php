@@ -54,4 +54,11 @@ class baseTablePrimary extends baseTableChildElement
 	{
 		$this->field = null;
 	}
+	/**
+	 * @desc 获取主键字段名
+	 */
+	public function getFieldname()
+	{
+		return $this->field->getName();
+	}
 }

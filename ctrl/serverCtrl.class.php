@@ -19,9 +19,9 @@ class serverCtrl extends baseCtrlServer
 		m( 'dbCloneNew' )->copyData();
 	}
 	
-	public function mtua()
+	public function ctua()
 	{
-		m( 'dbCloneNew' )->
+		m( 'dbCloneNew' )->cloneTableTUserAmount();
 	}
 	/*
 	public function imtu()

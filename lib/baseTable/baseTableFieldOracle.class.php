@@ -45,7 +45,7 @@ class baseTableFieldOracle extends baseTableField
 	{
 		if ( $this->type === baseFieldType::FT_ORA_DATE )
 		{
-			$this->setDefault( '' );
+			$this->setDefault( null );
 		}
 		if ( $this->is_primary === true )
 		{
@@ -57,8 +57,12 @@ class baseTableFieldOracle extends baseTableField
 		}
 		$prop_1 = $this->getFieldProp();
 		$prop_2 = $compare->getFieldProp();
-		
 		$res = $prop_1 !== $prop_2;
+		if ( $res === true )
+		{
+			var_dump( $prop_1 );
+			var_dump( $prop_2 );
+		}
 		return $res; 
 	}
 	/**
@@ -84,7 +88,7 @@ class baseTableFieldOracle extends baseTableField
 	public function getDefaultStr()
 	{
 		$default = $this->default;
-		if ( $default != '' )
+		if ( !is_null( $default ) )
 		{
 			if ( $this->type === 'number' )
 			{
@@ -94,10 +98,6 @@ class baseTableFieldOracle extends baseTableField
 			{
 				$default = "default '{$default}'";
 			}
-		}
-		else
-		{
-			$default = '';
 		}
 		return $default;
 	}
