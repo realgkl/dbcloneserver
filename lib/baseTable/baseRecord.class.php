@@ -40,7 +40,7 @@ class baseRecord
 		{
 			foreach ( $data as $field => $value )
 			{
-				$this->data[$field] = $value; 
+				$this->data[strtolower( $field )] = $value; 
 			}
 		}
 		if ( $primary !== '' && in_array( $primary, $this->getFields() ) )
@@ -89,6 +89,16 @@ class baseRecord
 		return $this->primary;
 	}
 	/**
+	 * @desc 设置主键
+	 */
+	public function setPrimary( $value )
+	{
+		if ( in_array( $value, $this->getFields() ) )
+		{
+			$this->primary = $value;
+		}
+	}
+	/**
 	 * @desc 生成sql
 	 * @param baseTableFieldList $fields
 	 */
@@ -101,6 +111,14 @@ class baseRecord
 	 * @param baseTableFieldList $fields
 	 */
 	public function createUpSql( &$fields = null )
+	{
+		return '';
+	}
+	/**
+	 * @desc 生成insert sql
+	 * @param baseTableFieldList $fields
+	 */
+	public function createInsSql( &$fields = null )
 	{
 		return '';
 	}
