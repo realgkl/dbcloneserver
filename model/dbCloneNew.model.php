@@ -27,7 +27,6 @@ class dbCloneNewModel extends baseModelComm
 		't_voucher',
 		't_voucher_type',
 		't_voucher_batch',
-		't_report_record',
 	);
 	/**
 	 * @desc mysql数据库列表对象
@@ -353,6 +352,14 @@ class dbCloneNewModel extends baseModelComm
 		return true;
 	}
 	/**
+	 * @desc 初始化月报表t_report_record
+	 */
+	protected function __iniTReportRecord()
+	{
+		$table = new tReportRecordTable( $this->om );
+		$table->init();		
+	}
+	/**
 	 * @desc 复制表
 	 */
 	public function cloneDb()
@@ -360,6 +367,7 @@ class dbCloneNewModel extends baseModelComm
 		$this->__iniMysqlTables();
 		$this->__toOracleTables();
 		$this->__iniCreateOracleTables();
+		$this->__iniTReportRecord();
 	}
 	/**
 	 * @desc 删除所有表
