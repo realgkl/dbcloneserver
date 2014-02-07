@@ -55,6 +55,14 @@ class baseTableFieldOracle extends baseTableField
 		{
 			$this->setNotNull( false );
 		}
+		if ( in_array( $this->type, array(
+				baseFieldType::FT_ORA_CHAR,
+				baseFieldType::FT_ORA_VARCHAR2,
+				baseFieldType::FT_ORA_CLOB,
+			) ) && is_null( $this->default ) )
+		{
+			$this->setDefault( '' ); 
+		}
 		$prop_1 = $this->getFieldProp();
 		$prop_2 = $compare->getFieldProp();
 		$res = $prop_1 !== $prop_2;

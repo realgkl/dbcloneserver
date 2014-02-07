@@ -165,7 +165,7 @@ class baseTableOracle extends baseTable
 					}
 					$field_not_null = $this->conn_obj->getValue( $v, 'nullable' ) == 'N' ? true : false;
 					$field_default = trim( $this->conn_obj->getValue( $v, 'data_default' ) );
-					$field_default = $field_default == "''" ? '' : $field_default;
+					$field_default = $field_default == "''" ? null : $field_default;
 					if ( in_array( $field_type, array(
 							baseFieldType::FT_ORA_DATE,
 							baseFieldType::FT_ORA_NUMBER,

@@ -27,6 +27,8 @@ class dbCloneNewModel extends baseModelComm
 		't_voucher',
 		't_voucher_type',
 		't_voucher_batch',
+		't_insure_user',
+		't_wlt_lottery_order',
 	);
 	/**
 	 * @desc mysql数据库列表对象
@@ -139,7 +141,7 @@ class dbCloneNewModel extends baseModelComm
 			foreach ( $this->table_list as $table_name )
 			{
 				$table = new useMysqlTable( $this->mm, $table_name );
-				$table->init();
+				$table->init();							
 				$this->umtList->add( $table );
 				unset( $table );
 			}
@@ -363,8 +365,8 @@ class dbCloneNewModel extends baseModelComm
 	 * @desc 复制表
 	 */
 	public function cloneDb()
-	{
-		$this->__iniMysqlTables();
+	{		
+		$this->__iniMysqlTables();		
 		$this->__toOracleTables();
 		$this->__iniCreateOracleTables();
 		$this->__iniTReportRecord();

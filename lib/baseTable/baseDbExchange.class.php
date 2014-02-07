@@ -135,6 +135,14 @@ class baseDbExchange
 				else
 				{
 					$type = baseFieldType::FT_ORA_VARCHAR2;
+					$match = preg_match( '/\'/', $default );
+					if ( $match == 0 )
+					{
+						if ( $default != '' )
+						{
+							$default = "'{$default}'";
+						}						
+					}
 					$prec = false;
 				}
 				break;

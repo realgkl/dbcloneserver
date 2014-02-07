@@ -66,7 +66,7 @@ class baseTableMysql extends baseTable
 			{
 				foreach ( $res as $v )
 				{
-					$field_name = $v['Field'];
+					$field_name = strtolower( $v['Field'] );
 					$field_type_arr = $this->__filterFieldType( $v['Type'] );
 					$field_type = $field_type_arr['type'];
 					$field_len = $field_type_arr['len'];
@@ -107,7 +107,7 @@ class baseTableMysql extends baseTable
 				{
 					$index_name = $v['Key_name'];
 					$non_unqiue = $v['Non_unique'] == 0 ? false : true;
-					$index_column = $v['Column_name'];
+					$index_column = strtolower( $v['Column_name'] );
 					$is_primary = ( $index_name === 'PRIMARY' ) ? true : false;
 					$field = &$this->fields->getByName( $index_column );
 					if ( $is_primary )
