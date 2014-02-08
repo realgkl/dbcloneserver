@@ -100,6 +100,10 @@ class baseTableFieldOracle extends baseTableField
 		{
 			$default = "default {$default}";		
 		}
+		else
+		{
+			$default = '';
+		}
 		return $default;
 	}
 }
