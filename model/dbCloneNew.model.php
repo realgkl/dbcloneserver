@@ -315,17 +315,30 @@ class dbCloneNewModel extends baseModelComm
 								$clone_amount = $clone_data->getByField( 'f_amount' );
 								$clone_freeze = $clone_data->getByField( 'f_freeze_amount' );
 								unset( $clone_data );
-								// 当有差值时再镜像
-								$amount_diff = round( $amount - $clone_amount, 2 );
-								$freeze_diff = round( $freeze - $clone_freeze, 2 );
-								$diff = ( $amount_diff != 0 ) || ( $freeze_diff != 0 ) ? true : false;
-								if ( $diff === true )
+								if ( is_null( $clone_amount ) && is_null( $clone_freeze ) )
+								// 不存在则直接存入
 								{
-									$res = $dst_t->saveAmountFreezeByUseridDate( $amount_diff, $freeze_diff, $user_id, $date  );
+									$res = $dst_t->saveAmountFreezeByUseridDate( $amount, $freeze, $user_id, $date  );
 									if ( $res === false )
 									{
 										$this->om->rollback();
 										return false;
+									}
+								}
+								else
+								{
+									// 当有差值时再镜像
+									$amount_diff = round( $amount - $clone_amount, 2 );
+									$freeze_diff = round( $freeze - $clone_freeze, 2 );
+									$diff = ( $amount_diff != 0 ) || ( $freeze_diff != 0 ) ? true : false;
+									if ( $diff === true )
+									{
+										$res = $dst_t->saveAmountFreezeByUseridDate( $amount_diff, $freeze_diff, $user_id, $date  );
+										if ( $res === false )
+										{
+											$this->om->rollback();
+											return false;
+										}
 									}
 								}
 							}
