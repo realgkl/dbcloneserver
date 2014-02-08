@@ -41,17 +41,7 @@ class baseTableOracle extends baseTable
 					$sql_field .= ")";
 				}
 				$sql_field .= ' ';
-				if ( !is_null( $field->getDefault() ) && $field->getType() !== 'date' )
-				{
-					if ( $field->getType() === 'number' )
-					{
-						$sql_field .= "default {$field->getDefault()} ";
-					}
-					else
-					{
-						$sql_field .= "default '{$field->getDefault()}' ";
-					}
-				}
+				$sql_field .= $field->getDefaultStr();
 				// 除了主键全部可为空
 				if ( $field->getIsPrimary() === true )
 				{
