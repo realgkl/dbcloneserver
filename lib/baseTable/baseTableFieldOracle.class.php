@@ -96,9 +96,13 @@ class baseTableFieldOracle extends baseTableField
 	public function getDefaultStr()
 	{
 		$default = $this->default;
-		if ( !is_null( $default ) )
+		if ( !is_null( $default ) && $default != '' )
 		{
 			$default = "default {$default}";		
+		}
+		else
+		{
+			$default = '';
 		}
 		return $default;
 	}
