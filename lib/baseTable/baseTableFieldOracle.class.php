@@ -98,14 +98,7 @@ class baseTableFieldOracle extends baseTableField
 		$default = $this->default;
 		if ( !is_null( $default ) )
 		{
-			if ( $this->type === 'number' )
-			{
-				$default = "default {$default}";
-			}
-			else
-			{
-				$default = "default '{$default}'";
-			}
+			$default = "default {$default}";		
 		}
 		return $default;
 	}
