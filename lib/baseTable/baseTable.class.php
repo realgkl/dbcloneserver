@@ -440,7 +440,7 @@ class baseTable extends baseTableElement
 	 */
 	public function &getDataByCond( $limit = 0, $primary_begin = false, $primary_field = '' )
 	{
-		return $this->__getDataByCond( $limit, $primary_begin = false, $primary_field = '' );
+		return $this->__getDataByCond( $limit, $primary_begin, $primary_field );
 	}
 	/**
 	 * @desc 判断表是否存在

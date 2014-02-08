@@ -133,6 +133,7 @@ class baseRecordOracle extends baseRecord
 	{
 		$field_name_arr = $fields->getFieldsArr();
 		$data_arr = array();
+		$field_arr = array();
 		$params = array();
 		foreach ( $field_name_arr as $field_name )
 		{
@@ -175,10 +176,11 @@ class baseRecordOracle extends baseRecord
 					$data = $occ;
 					break;
 			}
-			$data_arr[] = "{$field_name} = {$data}";
+			$field_arr[] = $field_name;
+			$data_arr[] = $data;
 			$params[] = $param;
 			unset( $param );
 		}
-		return "INSERT INTO {$table_name} SET " . implode( ',', $data_arr );
+		return "INSERT INTO {$table_name} (" . implode( ',', $field_arr ) . ') VALUES (' . implode( ',', $data_arr ) . ')';
 	}
 }

@@ -275,6 +275,7 @@ class dbCloneNewModel extends baseModelComm
 		{
 			// 根据user_id升序获取用户的彩金和冻结
 			$src_t->clearSearchCond();
+			$src_t->select( 'f_user_id' );
 			$src_t->select( 'f_amount' );
 			$src_t->select( 'f_freeze_amount' );
 			$src_t->orderBy( 'f_user_id' );
@@ -286,7 +287,7 @@ class dbCloneNewModel extends baseModelComm
 			else
 			{
 				$primary_begin = $datas->getMaxPrimary();
-				if ( is_null( $primary_begin ) )
+				if ( is_null( $primary_begin ) || $primary_begin == '' )
 				{
 					$primary_begin = -1;
 				}
