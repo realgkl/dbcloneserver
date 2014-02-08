@@ -409,10 +409,13 @@ class baseTableOracle extends baseTable
 				}
 				else
 				{
-					$sql = "alter table {$this->name} add {$dst_field->getName()} {$dst_field->getTypeLenStr()} {$dst_field->getDefaultStr()}";					
-					$res = $this->conn_obj->exec( $sql );
+					$sql = "alter table {$this->name} add {$dst_field->getName()} {$dst_field->getTypeLenStr()} {$dst_field->getDefaultStr()}";
+					$err_no = '';
+					$err_msg = '';
+					$res = $this->conn_obj->exec( $sql, array(), false,  $err_no, $err_msg );
 					if ( $res === false )
 					{
+						die( $sql );
 						return false;
 					}
 				}

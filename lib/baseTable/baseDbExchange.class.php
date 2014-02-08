@@ -120,6 +120,18 @@ class baseDbExchange
 				$type = baseFieldType::FT_ORA_DATE;
 				$len = false;
 				$prec = false;
+				if ( $default == '0000-00-00 00:00:00' )
+				{
+					$default = null;
+				}
+				if ( $default != '' )
+				{
+					$match = preg_match( '/\'/', $default );
+					if ( $match == 0 )
+					{
+						$default = "'{$default}'";
+					}
+				}
 				break;
 			case baseFieldType::FT_MY_CHAR:
 				$type = baseFieldType::FT_ORA_CHAR;
@@ -135,10 +147,10 @@ class baseDbExchange
 				else
 				{
 					$type = baseFieldType::FT_ORA_VARCHAR2;
-					$match = preg_match( '/\'/', $default );
-					if ( $match == 0 )
+					if ( $default != '' )
 					{
-						if ( $default != '' )
+						$match = preg_match( '/\'/', $default );
+						if ( $match == 0 )
 						{
 							$default = "'{$default}'";
 						}						
