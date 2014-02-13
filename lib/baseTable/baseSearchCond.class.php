@@ -199,7 +199,16 @@ class baseSearchCondRecord
 	 */
 	public function getKey()
 	{
-		return $this->field.$this->opera.$this->value_1.$this->value_2.$this->sql_func_1.$this->sql_func_2;
+		$key = $this->field.$this->opera.$this->value_1.$this->value_2; 
+		if ( !is_null( $this->sql_func_1 ) )
+		{
+			$key .= $this->sql_func_1->getKey();
+		}
+		if ( !is_null( $this->sql_func_2 ) )
+		{
+			$key .= $this->sql_func_2->getKey();
+		}	
+		return $key;
 	}
 	/**
 	 * @desc 获取字段名

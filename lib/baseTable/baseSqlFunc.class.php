@@ -84,6 +84,13 @@ abstract class baseSqlFunc
 		}
 		return $sql;
 	}
+	/**
+	 * @desc 获取key
+	 */
+	public function getKey()
+	{
+		return $this->name.implode( ',', $this->params );
+	}
 }
 /**
  * @desc 数据库函数类mysql-基类
