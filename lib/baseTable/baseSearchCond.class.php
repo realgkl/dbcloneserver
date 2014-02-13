@@ -55,8 +55,10 @@ class baseSearchCond
 	}
 	/**
 	 * @desc 增加搜索条件
+	 * @param baseSqlFunc $sql_func_1 对值1的sql函数
+	 * @param baseSqlFunc $sql_func_2 对值2的sql函数 
 	 */
-	public function add( $field, $opera, $value_1, $value_2 = null )
+	public function add( $field, $opera, $value_1, $value_2 = null, &$sql_func_1 = null, &$sql_func_2 = null )
 	{
 		if ( $field != '' && in_array( $opera, $this->opera_arr ) && $value_1 != '' )
 		{
@@ -64,7 +66,7 @@ class baseSearchCond
 			{
 				return false;
 			}
-			$cond_record = new baseSearchCondRecord( $field, $opera, $value_1, $value_2 );
+			$cond_record = new baseSearchCondRecord( $field, $opera, $value_1, $value_2, $sql_func_1, $sql_func_2 );
 			$key = $this->cond_lst->add( $cond_record );
 			if ( $key === false )
 			{
@@ -96,14 +98,14 @@ class baseSearchCond
 			{
 				$cond_rec = &$this->cond_lst->getByKey( $key );
 				if ( $cond_rec->getOpera() == 'between' )
-				{
-					$sql_arr[] = "{$cond_rec->getField()} between {$occ} and {$occ}";
+				{					
+					$sql_arr[] = $cond_rec->getSql( $occ );
 					$params[] = $cond_rec->getValue1();
 					$params[] = $cond_rec->getValue2();
 				}
 				else
 				{
-					$sql_arr[] = "{$cond_rec->getField()} {$cond_rec->getOpera()} {$occ}";
+					$sql_arr[] = $cond_rec->getSql( $occ );
 					$params[] = $cond_rec->getValue1();
 				}
 			}
@@ -152,29 +154,52 @@ class baseSearchCondRecord
 	 */
 	protected $value_2;
 	/**
-	 * @desc 构造函数
+	 * @desc sql函数1
+	 * @var 
 	 */
-	public function __construct( $field, $opera, $value_1, $value_2 )
+	protected $sql_func_1;
+	/**
+	 * @desc sql函数2
+	 */
+	protected $sql_func_2;
+	/**
+	 * @desc 构造函数
+	 * @param baseSqlFunc $sql_func_1 对值1的sql函数
+	 * @param baseSqlFunc $sql_func_2 对值2的sql函数
+	 */
+	public function __construct( $field, $opera, $value_1, $value_2, &$sql_func_1, &$sql_func_2 )
 	{
 		$this->field = $field;
 		$this->opera = $opera;
-		$this->value_1 = $value_1;
-		$value_2 = is_null( $value_2 ) ? '' : $value_2;
-		$this->value_2 = $value_2;
+		$this->value_1 = $value_1;		
+		$this->value_2 = is_null( $value_2 ) ? '' : $value_2;
+		$this->sql_func_1 = null;
+		if ( !is_null( $sql_func_1 ) )
+		{
+			$this->sql_func_1 = &$sql_func_1;
+		}
+		$this->sql_func_2 = null;
+		if ( !is_null( $sql_func_2 ) )
+		{
+			$this->sql_func_2 = &$sql_func_2;
+		}
 	}
 	/**
 	 * @desc 析构函数
 	 */
 	public function __destruct()
 	{
-		
+		$this->sql_func_1 = null;
+		$this->sql_func_2 = null;
+		unset( $this->sql_func_1 );
+		unset( $this->sql_func_2 );
 	}
 	/**
 	 * @desc 获取条件的唯一标识
 	 */
 	public function getKey()
 	{
-		return $this->field.$this->opera.$this->value_1.$this->value_2;
+		return $this->field.$this->opera.$this->value_1.$this->value_2.$this->sql_func_1.$this->sql_func_2;
 	}
 	/**
 	 * @desc 获取字段名
@@ -203,6 +228,37 @@ class baseSearchCondRecord
 	public function getValue2()
 	{
 		return $this->value_2;
+	}
+	/**
+	 * @desc 获取sql
+	 */
+	public function getSql( $occ )
+	{
+		$sql = '';
+		if ( $this->opera === 'between' )
+		{
+			$value_1 = $occ;
+			if ( !is_null( $this->sql_func_1 ) )
+			{
+				$value_1 = $this->sql_func_1->getFuncSql( $occ );
+			}
+			$value_2 = $occ;
+			if ( !is_null( $this->sql_func_2 ) )
+			{
+				$value_2 = $this->sql_func_2->getFuncSql( $occ );
+			}
+			$sql = "{$this->field} between {$value_1} and {$value_2}";
+		}
+		else
+		{
+			$value_1 = $occ;
+			if ( !is_null( $this->sql_func_1 ) )
+			{
+				$value_1 = $this->sql_func_1->getFuncSql( $occ );
+			}
+			$sql = "{$this->field} {$this->opera} {$value_1}";
+		}
+		return $sql;
 	}
 }
 /**

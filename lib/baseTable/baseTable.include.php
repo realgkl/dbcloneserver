@@ -1,5 +1,6 @@
 <?php
 include __DIR__ . DIRECTORY_SEPARATOR . 'baseList' . '.class.php';
+include __DIR__ . DIRECTORY_SEPARATOR . 'baseSqlFunc' . '.class.php';
 include __DIR__ . DIRECTORY_SEPARATOR . 'baseSearchCond' . '.class.php';
 include __DIR__ . DIRECTORY_SEPARATOR . 'baseRecord' . '.class.php';
 include __DIR__ . DIRECTORY_SEPARATOR . 'baseRecordMysql' . '.class.php';

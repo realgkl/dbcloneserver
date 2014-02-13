@@ -199,6 +199,15 @@ class baseTable extends baseTableElement
 	{
 		$this->collection->clear();
 		return $this->collection;
+	}	
+	/**
+	 * @desc 增加{搜索条件}
+	 * @param baseSqlFunc $sql_func_1 对值1的sql函数
+	 * @param baseSqlFunc $sql_func_2 对值2的sql函数
+	 */
+	protected function __where( $field, $opera, $value_1, $value_2 = null, &$sql_func_1 = null, &$sql_func_2 = null )
+	{
+		return $this->search_cond->add( $field, $opera, $value_1, $value_2, $sql_func_1, $sql_func_2 );
 	}
 	/**
 	 * @desc 初始化
@@ -353,10 +362,37 @@ class baseTable extends baseTableElement
 	}
 	/**
 	 * @desc 增加{搜索条件}
+	 * @param string $field 字段名
+	 * @param string $opera 操作符
+	 * @param unknown $value_1 值1
+	 * @param unknown $value_2 值2
+	 * @param string $sql_func_1 对值1的sql函数
+	 * @param string $sql_func_2 对值2的sql函数
+	 * @param array $sql_func_param_1 函数1的参数
+	 * @param array $sql_func_param_2 函数2的参数
 	 */
-	public function where( $field, $opera, $value_1, $value_2 = null )
+	public function where( $field, $opera, $value_1, $value_2 = null,
+			$sql_func_1 = null, $sql_func_param_1 = array(),  $sql_func_2 = null, $sql_func_param_2 = array() )
 	{
-		return $this->search_cond->add( $field, $opera, $value_1, $value_2 );
+		if ( !is_null( $sql_func_1 ) )
+		{
+			$sql_name = $sql_func_1;
+			$sql_func_1 = new baseSqlFuncOci( $sql_name, $sql_func_param_1 );
+			if ( $sql_func_1->isValid() === false )
+			{
+				$sql_func_1 = null;
+			}
+		}
+		if ( !is_null( $sql_func_2 ) )
+		{
+			$sql_name = $sql_func_2;
+			$sql_func_2 = new baseSqlFuncOci( $sql_name,  $sql_func_param_2 );
+			if ( $sql_func_2->isValid() === false )
+			{
+				$sql_func_2 = null;
+			}
+		}
+		return $this->__where( $field, $opera, $value_1, $value_2, $sql_func_1, $sql_func_2 );
 	}
 	/**
 	 * @desc 增加{查询字段}
