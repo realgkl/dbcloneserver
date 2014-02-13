@@ -86,7 +86,7 @@ class cloneTUserAmountTable extends useOracleTable
 		$this->clearSearchCond();
 		$this->select( 'f_amount', 'sum', 'f_amount' );
 		$this->select( 'f_freeze_amount', 'sum', 'f_freeze_amount' );
-		$this->where( 'f_date', '<=',  $date, null, 'to_date', '\'yyyy-mm-dd hh24:mi:ss\'' );
+		$this->where( 'f_date', '<=',  $date, null, 'to_date', array('\'yyyy-mm-dd hh24:mi:ss\'') );
 		$this->where( 'f_user_id', '=', $user_id );
 		return $this->getDataByCond();
 	}

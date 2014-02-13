@@ -93,7 +93,13 @@ abstract class baseSqlFunc
  */
 class baseSqlFuncMy extends baseSqlFunc
 {
-	
+	/**
+	 * @see baseSqlFunc::__initFuncLst()
+	 */
+	protected function __initFuncLst()
+	{
+		
+	}
 }
 /**
  * @desc 数据库函数类oracle-基类
@@ -103,6 +109,9 @@ class baseSqlFuncMy extends baseSqlFunc
  */
 class baseSqlFuncOci extends baseSqlFunc
 {
+	/**
+	 * @see baseSqlFunc::__initFuncLst()
+	 */
 	protected function __initFuncLst()
 	{
 		$this->func_lst[] = 'to_date';
