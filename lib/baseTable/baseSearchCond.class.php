@@ -60,7 +60,7 @@ class baseSearchCond
 	 */
 	public function add( $field, $opera, $value_1, $value_2 = null, &$sql_func_1 = null, &$sql_func_2 = null )
 	{
-		if ( $field != '' && in_array( $opera, $this->opera_arr ) && $value_1 != '' )
+		if ( $field != '' && in_array( $opera, $this->opera_arr ) && $value_1 !== '' && !is_null( $value_1 ) )
 		{
 			if ( $opera == 'between' && $value_2 == '' )
 			{
