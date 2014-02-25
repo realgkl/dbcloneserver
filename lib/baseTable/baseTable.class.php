@@ -161,7 +161,7 @@ class baseTable extends baseTableElement
 	 * @param integer $primary_begin 主键开始
 	 * @return baseCollection
 	 */
-	protected function &__getData( $raw_update_time, $limit = 0, $primary_begin = 0 )
+	protected function &__getData( $raw_update_time, $end_time, $limit = 0, $primary_begin = 0 )
 	{
 		$this->collection->clear();
 		return $this->collection;
@@ -333,9 +333,9 @@ class baseTable extends baseTableElement
 	/**
 	 * @desc 获取数据
 	 */
-	public function &getData( $raw_update_time, $limit = 0, $primary_begin = 0 )
+	public function &getData( $raw_update_time, $end_time, $limit = 0, $primary_begin = 0 )
 	{
-		return $this->__getData( $raw_update_time, $limit, $primary_begin );
+		return $this->__getData( $raw_update_time, $end_time, $limit, $primary_begin );
 	}
 	/**
 	 * @desc 获取最后更新时间

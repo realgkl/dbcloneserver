@@ -159,7 +159,7 @@ class baseTableMysql extends baseTable
 	 * @see baseTable::__getData()
 	 * @since 20140110 获取数据实际逻辑 gkl
 	 */
-	protected function &__getData( $raw_update_time, $limit = 0, $primary_begin = 0 )
+	protected function &__getData( $raw_update_time, $end_time, $limit = 0, $primary_begin = 0 )
 	{
 		$fields_arr_keys = $this->fields->getKeys();
 		$field_primary = $this->primary->get()->getName();
@@ -175,6 +175,11 @@ class baseTableMysql extends baseTable
 		{
 			$where_arr[] = "`raw_update_time` > ?";
 			$params[] = $raw_update_time;
+		}
+		if ( $end_time !== false && preg_match ( $date_time_pattern, $end_time )  > 0 )
+		{
+			$where_arr[] = "`raw_update_time` <= ?";
+			$params[] = $end_time;
 		}
 		$sql = 'select ';
 		$select_arr = array();

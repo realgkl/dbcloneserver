@@ -93,10 +93,11 @@ class dbCloneNewModel extends baseModelComm
 				baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t开始复制表 {$m_t->getName()} 数据", "\n" );
 				$this->om->begin();
 				$primary_begin = 0;
+				$end_time = date( 'Y-m-d H:i:s' );
 				$raw_update_time = $o_t->getLastRawupdatetime();
 				do 
 				{
-					$datas =  &$m_t->getData( $raw_update_time, $this->copy_limit, $primary_begin );
+					$datas =  &$m_t->getData( $raw_update_time, $end_time, $this->copy_limit, $primary_begin );
 					if ( $datas->isEmpty() )
 					{
 						$primary_begin = -1;
