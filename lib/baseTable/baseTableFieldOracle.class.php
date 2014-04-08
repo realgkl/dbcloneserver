@@ -70,6 +70,11 @@ class baseTableFieldOracle extends baseTableField
 		{
 			var_dump( $prop_1 );
 			var_dump( $prop_2 );
+			// 当{需要修改的长度}比{真实的长度}小时，不做修改
+			if ( $this->getLen() < $compare->getLen() )
+			{
+				$res = false;
+			}
 		}
 		return $res; 
 	}

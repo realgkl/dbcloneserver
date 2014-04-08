@@ -123,7 +123,7 @@ class baseDbExchange
 				$default = null;
 				break;
 			case baseFieldType::FT_MY_CHAR:
-				$type = baseFieldType::FT_ORA_CHAR;
+				$type = baseFieldType::FT_ORA_VARCHAR2;
 				$prec = false;
 				break;
 			case baseFieldType::FT_MY_VARCHAR:

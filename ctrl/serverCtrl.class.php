@@ -23,6 +23,14 @@ class serverCtrl extends baseCtrlServer
 	{
 		m( 'dbCloneNew' )->cloneTableTUserAmount();
 	}
+	/**
+	 * @desc 增加函数先备份数据再镜像t_user_amount
+	 */
+	public function cpdActua()
+	{
+		m( 'dbCloneNew' )->copyData();
+		m( 'dbCloneNew' )->cloneTableTUserAmount();
+	}
 	/*
 	public function imtu()
 	{

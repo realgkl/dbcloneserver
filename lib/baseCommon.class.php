@@ -64,13 +64,17 @@ class baseCommon
 	/**
 	 * @desc 封装echo
 	 */
-	public static function __echo ( $msg = '', $enter = false, $charset = 'gb2312//IGNORE' )
+	public static function __echo ( $msg = '', $enter = false, $charset = 'utf-8//IGNORE' )
 	{
 		if ( $enter !== false )
 		{
 			$msg .= "{$enter}";
 		}
 		$msg = iconv( 'utf-8', $charset, $msg );
+		if ( !defined( 'CLOSE_LOG' ) || CLOSE_LOG === false )
+		{
+			self::writeLog( $msg );
+		}
 		echo $msg;
 	}
 	/**
@@ -204,5 +208,28 @@ class baseCommon
 	public static function iniModels()
 	{
 		self::$models_arr = array();
+	}
+	/**
+	 * @desc 写日志文件
+	 * @since 20140227
+	 * @param unknown $logs
+	 * @param string $file_name
+	 */
+	public static function writeLog( $logs, $file_name = '' )
+	{
+		$logs = date('Y-m-d H:i:s') . "\t" . $logs . "\n";
+		if ( empty( $file_name ) )
+		{
+			$file = ROOT_PATH . '/logs/' . date( 'Y/m/d' ) . '-logs.txt';
+		}
+		else
+		{
+			$file = ROOT_PATH . '/logs/' . date( 'Y/m/d' ) . '-' . $file_name . '.txt';
+		}
+		if ( !file_exists( dirname( $file ) ) )
+		{
+			mkdir( dirname( $file ), 0775, true );
+		}
+		error_log( $logs, 3, $file );
 	}
 }

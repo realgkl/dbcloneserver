@@ -495,7 +495,7 @@ class baseModelOci extends baseModelEx
 			$this->__drop_seq( $seq_name );
 		}
 		$sql = "
-				create sequence {$seq_name} increment by {$start} start with {$stepby}
+				create sequence {$seq_name} increment by {$stepby} start with {$start}
 		";
 		return $this->exec( $sql );
 	}
@@ -549,5 +549,12 @@ class baseModelOci extends baseModelEx
 	public function create_seq( $seq_name, $start = 1, $stepby = 1 )
 	{
 		return $this->__create_seq( $seq_name, $start, $stepby );
+	}
+	/**
+	 * @desc 判断是否存在{自增序列}
+	 */
+	public function exists_seq( $seq_name )
+	{
+		return $this->__exists_seq( $seq_name );
 	}
 }

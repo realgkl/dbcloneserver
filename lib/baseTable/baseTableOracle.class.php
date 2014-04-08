@@ -390,6 +390,7 @@ class baseTableOracle extends baseTable
 						{
 							if  ( !in_array( $err_no, array(
 									'1440', // 要减小精度或标度, 则要修改的列必须为空
+									'1441', // 文本减小长度
 								) ) )
 							{
 								return false;
@@ -458,10 +459,6 @@ class baseTableOracle extends baseTable
 		$occ = '?';
 		$where = $this->search_cond->createSql( $params, $occ );
 		$where = $where === false ? '' : "WHERE {$where} ";
-		if ( $limit > 0 )
-		{
-			$this->select[] = "ROWNUM as RN";
-		}
 		if ( !empty( $this->select ) )
 		{
 			$select = "SELECT " . implode( ', ', $this->select ) . " ";
@@ -491,7 +488,7 @@ class baseTableOracle extends baseTable
 		}
 		if ( $limit > 0 )
 		{
-			$sql = "SELECT a.* FROM ({$select}{$from}{$where}{$group_by}{$order_by}) a WHERE a.RN <= {$occ}";
+			$sql = "SELECT b.* FROM ( SELECT a.*, ROWNUM as RN FROM ({$select}{$from}{$where}{$group_by}{$order_by}) a ) b WHERE b.RN <= {$occ}";
 			$params[] = $limit;
 		}
 		else
@@ -551,5 +548,28 @@ class baseTableOracle extends baseTable
 		$table = new baseTableOracle( $conn_obj, $dst_table_name );
 		$table->setSrcName( $table_name );
 		return $table;
+	}
+	/**
+	 * @desc 获取最大/最小时间字段
+	 * @since 20140304 gkl
+	 */
+	public function getFuncDateField( $field, $func = 'max' )
+	{
+		$result = false;
+		if ( in_array( $func, array(
+				'max', 'min'
+			) ) )
+		{
+			$func = strtoupper( $func );
+			$table_name = strtoupper( $this->name );
+			$sql = "SELECT TO_CHAR({$func}({$field}), 'yyyy-mm-dd hh24:mi:ss') as a FROM {$table_name}";
+			$res = $this->conn_obj->getRow( $sql );
+			if ( $res !== false )
+			{
+				$result = $this->conn_obj->getValue( $res, 'a' );
+				$result = ( is_null( $result ) or $result === '' ) ? false : $result;
+			}
+		}
+		return $result;
 	}
 }

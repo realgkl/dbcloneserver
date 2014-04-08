@@ -36,6 +36,7 @@ class baseSearchCond
 	public static $func = array(
 		'sum',
 		'count',
+		'max',
 	);
 	
 	/**

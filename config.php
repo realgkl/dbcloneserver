@@ -1,4 +1,5 @@
 <?php
+//define('SHOW_SQL_TIME',true);
 /**
  * @desc 配置文件目录信息
  */

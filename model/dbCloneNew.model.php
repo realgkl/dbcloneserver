@@ -76,6 +76,7 @@ class dbCloneNewModel extends baseModelComm
 	{
 		if ( !empty( $this->table_list ) )
 		{
+			$end_time = date( 'Y-m-d H:i:s' );
 			foreach ( $this->table_list as $table_name )
 			{
 				$m_t = $this->umtList->getByName( $table_name );
@@ -93,7 +94,6 @@ class dbCloneNewModel extends baseModelComm
 				baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t开始复制表 {$m_t->getName()} 数据", "\n" );
 				$this->om->begin();
 				$primary_begin = 0;
-				$end_time = date( 'Y-m-d H:i:s' );
 				$raw_update_time = $o_t->getLastRawupdatetime();
 				do 
 				{
@@ -269,16 +269,23 @@ class dbCloneNewModel extends baseModelComm
 		// 初始化t_user_amount镜像表
 		$dst_t = &$this->__iniCloneTUserAmount( $this->om );
 		$limit = $this->copy_limit;
-		$this->om->begin();
 		$primary_begin = 0;
+		$end_time = date( 'Y-m-d H:i:s' );
+		$begin_time = $dst_t->getFuncDateField( 'f_date', 'max' );
 		baseCommon::__echo( date( 'Y-m-d H:i:s' ) . "\t开始克隆表 {$src_t->getName()} 数据", "\n" );
 		do
 		{
+			$this->om->begin();
 			// 根据user_id升序获取用户的彩金和冻结
 			$src_t->clearSearchCond();
 			$src_t->select( 'f_user_id' );
 			$src_t->select( 'f_amount' );
 			$src_t->select( 'f_freeze_amount' );
+			if ( $begin_time !== false  )
+			{
+				$src_t->where( 'f_raw_update_time', '>', $begin_time, null, 'to_date', array('\'yyyy-mm-dd hh24:mi:ss\'') );
+			}
+			$src_t->where( 'f_raw_update_time', '<=', $end_time, null, 'to_date', array('\'yyyy-mm-dd hh24:mi:ss\'') );
 			$src_t->orderBy( 'f_user_id' );
 			$datas = &$src_t->getDataByCond( $limit, $primary_begin, 'f_user_id' );
 			if ( $datas->isEmpty() )
@@ -353,19 +360,19 @@ class dbCloneNewModel extends baseModelComm
 									return false;
 								}
 							}
-							unset( $clone_datas );
-							baseCommon::__echo( '.' );
+							unset( $clone_datas );							
 						}
 					}
 				}
 			}
 			unset( $datas );
+			baseCommon::__echo( '.' );
+			$this->om->commit();
 		}		
 		while ( $primary_begin >= 0 );
 		unset( $src_t );
 		unset( $dst_t );
 		baseCommon::__echo( "\n" );
-		$this->om->commit();
 		return true;
 	}
 	/**
