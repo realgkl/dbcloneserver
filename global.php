@@ -44,7 +44,7 @@ function export_define($source = null , $type = 'file') {
 /**
  * @desc 获取/实例化 数据模型方法
  * @return
- * bool|dbCloneNewModel
+ * bool|dbCloneNewModel|checkUserByDayModel
  * 数据模型
  */
 function m( $modelName, $noExistsExit = true )

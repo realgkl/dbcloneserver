@@ -37,4 +37,13 @@ class serverCtrl extends baseCtrlServer
 		m( 'dbCloneNew' )->iniMysqlTUser();
 	}
 	*/
+	/**
+	 * @desc 增加函数用来进行每个用户流水对帐
+	 * @since 20140324 gkl
+	 * @param date $day 日期
+	 */
+	public function cubd( $day = '' )
+	{
+		m( 'dbCloneNew' )->checkUserByDay( $day );
+	}
 }

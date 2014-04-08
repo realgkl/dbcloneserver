@@ -232,4 +232,38 @@ class baseCommon
 		}
 		error_log( $logs, 3, $file );
 	}
+	
+	/**
+	 * @desc 检查日期
+	 * @since 20140324 gkl
+	 */
+	public static  function checkDate ( &$date, $delimiter = '-' )
+	{
+		if ( $date === false )
+		{
+			return true;
+		}
+		if ( $delimiter !== '-' )
+		{
+			$date = str_replace( $delimiter, '-', $date );
+		}
+		$match = preg_match( '/[^0-9\-]/', $date );
+		if ( $match === 1 )
+		{
+			return false;
+		}
+		$date_arr = explode( $delimiter, $date );
+		if ( count( $date_arr ) != 3 )
+		{
+			return false;
+		}
+		$y	= intval( $date_arr[0] );
+		$m	= intval( $date_arr[1] );
+		$d	= intval( $date_arr[2] );
+		if ( $m > 12 || $m < 1 || $d < 1 || $d > 31)
+		{
+			return false;
+		}
+		return true;
+	}
 }
