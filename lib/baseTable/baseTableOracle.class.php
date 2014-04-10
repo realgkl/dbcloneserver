@@ -445,13 +445,21 @@ class baseTableOracle extends baseTable
 	{
 		if ( $primary_field == '' )
 		{
-			$primary_name = $this->primary->get()->getName();
+			$primary_field_obj = $this->primary->get();
+			if ( is_null( $primary_field_obj ) )
+			{
+				$primary_name = null;
+			}
+			else
+			{
+				$primary_name = $primary_field_obj->getName();
+			}
 		}
 		else
 		{
 			$primary_name = $primary_field;
 		}
-		if ( $primary_begin !== false )
+		if ( $primary_begin !== false && !is_null( $primary_name ) )
 		{
 			$this->search_cond->add( $primary_name, '>', $primary_begin );
 		}
@@ -505,7 +513,10 @@ class baseTableOracle extends baseTable
 			{
 				$rec = new baseRecord();
 				$rec->setData( $data );
-				$rec->setPrimary( $primary_name );
+				if ( !is_null( $primary_name ) )
+				{
+					$rec->setPrimary( $primary_name );
+				}
 				$this->collection->add( $rec );
 				unset( $rec );
 			}

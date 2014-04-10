@@ -22,8 +22,8 @@ class baseSearchCond
 		'<=',
 		'<>',
 		'=',
-		'is',
-		'is not',
+		'is null',
+		'is not null',
 		'like',
 		'not like',
 		'between',
@@ -61,8 +61,19 @@ class baseSearchCond
 	 */
 	public function add( $field, $opera, $value_1, $value_2 = null, &$sql_func_1 = null, &$sql_func_2 = null )
 	{
-		if ( $field != '' && in_array( $opera, $this->opera_arr ) && $value_1 !== '' && !is_null( $value_1 ) )
+		if ( $field != '' && in_array( $opera, $this->opera_arr ) )
 		{
+			if ( $opera == 'is null' || $opera == 'is not null' )
+			{
+				$value_1 = null;
+			}
+			else
+			{
+				if ( $value_1 == '' || is_null( $value_1 ) )
+				{
+					return false;
+				}
+			}
 			if ( $opera == 'between' && $value_2 == '' )
 			{
 				return false;
@@ -172,7 +183,7 @@ class baseSearchCondRecord
 	{
 		$this->field = $field;
 		$this->opera = $opera;
-		$this->value_1 = $value_1;		
+		$this->value_1 = is_null( $value_1 ) ? '' : $value_1;		
 		$this->value_2 = is_null( $value_2 ) ? '' : $value_2;
 		$this->sql_func_1 = null;
 		if ( !is_null( $sql_func_1 ) )
@@ -258,6 +269,10 @@ class baseSearchCondRecord
 				$value_2 = $this->sql_func_2->getFuncSql( $occ );
 			}
 			$sql = "{$this->field} between {$value_1} and {$value_2}";
+		}
+		else if ( in_array( $this->opera, array('is null', 'is not null') ) )
+		{
+			$sql = "{$this->field} {$this->opera}";
 		}
 		else
 		{

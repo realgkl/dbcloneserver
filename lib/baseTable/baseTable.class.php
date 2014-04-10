@@ -469,6 +469,14 @@ class baseTable extends baseTableElement
 		$this->collection->clear();
 	}
 	/**
+	 * @desc 释放数据集
+	 */
+	public function newCollection()
+	{
+		unset( $this->collection );
+		$this->collection = new baseCollection();
+	}
+	/**
 	 * @desc 根据{条件}获取数据
 	 * @param integer $limit 限制条数
 	 * @param unknown $primary_begin 主键开始值

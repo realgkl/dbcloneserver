@@ -476,33 +476,31 @@ class dbCloneNewModel extends baseModelComm
 	 */
 	public function checkUserByDay( $day )
 	{
-		$check = baseCommon::checkDate( $day );
+		$check = baseCommon::checkDate( $day );		
 		if ( $day === '' || $check === false )
 		{
 			$day = date( 'Y-m-d' );
 		}
 		$begin = $day . ' 00:00:00';
 		$end = $day . ' 23:59:59';
-		$users_collection = &m( 'checkUserByDay' )->getUsers( $begin, $end );
-		if ( !$users->isEmpty() )
+		$users_collection = m( 'checkUserByDay' )->getUsers( $begin, $end );		
+		if ( !empty( $users_collection ) )
 		{
-			$keys = $users_collection->getKeys();
-			foreach ( $keys as $key )
+			foreach ( $users_collection as $users_one )
 			{
-				$users_obj = &$users_collection->getByKey( $key );
-				$user_id = $users_obj->getByField( 'f_user_id' );
-				$clone = m('checkUserByDay')->getCloneChange( $user_id, $date );
+				$user_id = $users_one[strtoupper('f_user_id')] ;
+				$clone = m('checkUserByDay')->getCloneChange( $user_id, $day );
 				$change = m('checkUserByDay')->getChange( $user_id, $begin, $end );
+				var_dump( $clone );
+				var_dump( $change );
 				$diff_1 = round( $clone[0] - $change[0], 2 );
 				$diff_2 = round( $clone[1] - $change[1], 2 );
  				if ( $diff_1 != 0 || $diff_2 != 0 )
  				{
- 					$log = "日期 {$date} 用户id {$user_id} 余额差 {$diff_1} 冻结差 {$diff_2}";
+ 					$log = "日期 {$day} 用户id {$user_id} 余额差 {$diff_1} 冻结差 {$diff_2}";
  					baseCommon::writeLog( $log, 'checkDay' );
  				}
- 				unset( $users_obj );
 			}
-			unset( $keys );
 		}
 		unset( $users_collection );
 	}

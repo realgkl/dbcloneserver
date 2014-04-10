@@ -280,7 +280,10 @@ class baseModelOci extends baseModelEx
 		if ( $res )
 		{
 			if ( $this->show_time )
-				$this->diff( $t, $sql );
+			{
+				$s = $this->__createSqlByParams( $sql, $params );
+				$this->diff( $t, $s );
+			}
 			return $query->fetchAll();
 		}
 		else
@@ -307,7 +310,10 @@ class baseModelOci extends baseModelEx
 		if ( $res )
 		{
 			if ( $this->show_time )
-				$this->diff( $t, $sql );
+			{
+				$s = $this->__createSqlByParams( $sql, $params );
+				$this->diff( $t, $s );
+			}
 			return $query->fetch();
 		}
 		else
@@ -335,7 +341,10 @@ class baseModelOci extends baseModelEx
 		if ( $res )
 		{
 			if ( $this->show_time )
-				$this->diff( $t, $sql );
+			{
+				$s = $this->__createSqlByParams( $sql, $params );
+				$this->diff( $t, $s );
+			}
 			$affact = $query->rowCount();
 			/*
 			if ( $affact <= 0 )
